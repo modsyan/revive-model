@@ -2,3 +2,7 @@
 .venv/
 .vscode/
 project/dataset/
+
+my_project/models/
+my_project/data/
+

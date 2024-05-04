@@ -1,26 +1,22 @@
-import cv2
+import tensorflow as tf
 import mediapipe as mp
 import numpy as np
+import cv2
 from data_processing import Data_Loader
-from preproccing_mediapipe_kinctv2 import mediapipe_to_kinect_v2
-from collections import namedtuple
+from preproccing_mediapipe_kinctv2 import mediapipe_to_kinect_v2, Keypoint
+from stgc_lstm import GCNLayer
 
-from tensorflow.keras.models import load_model
 
-# Load your model
-model = load_model("models/model_ex5.keras", safe_mode=False)
+data_loader = Data_Loader('my_project/data/KIMORE/Kimore_ex5')
 
-# Load Data_Loader for scaling and preprocessing
-data_loader = Data_Loader('data/KIMORE/Kimore_ex5')
+custom_objects = {'GCNLayer': GCNLayer}
+model = tf.keras.models.load_model("my_project/models/my_model_trained_exercise.keras", custom_objects=custom_objects)
 
-# Initialize MediaPipe Pose model
+
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-# Keypoint namedtuple for Kinect v2 format
-Keypoint = namedtuple('Keypoint', ['x', 'y', 'z', 'confidence'])
 
-# Function to preprocess the frame
 def preprocess_frame(frame):
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = pose.process(frame_rgb)
