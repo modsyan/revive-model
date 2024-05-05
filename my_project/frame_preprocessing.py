@@ -173,6 +173,13 @@ class FramePreprocessing:
                 X_frame[0, counter + i] = frame[parts + i]
             counter += self.num_channel
 
+        # for row in range(self.x.shape[0]):
+        #     counter = 0
+        #     for parts in self.body_part:
+        #         for i in range(self.num_channel):
+        #             X_frame[row, counter + i] = self.x[row, parts + i]
+        #         counter += self.num_channel 
+
         # Assuming sc1 is defined somewhere outside this class
         X_frame = self.sc1.transform(X_frame)
 

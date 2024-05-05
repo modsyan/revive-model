@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from scipy import signal
 
 index_Spine_Base = 0
 index_Spine_Mid = 4
