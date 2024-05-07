@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from scipy import signal
 
 index_Spine_Base = 0
@@ -29,6 +29,8 @@ index_Thumb_Left = 88  # no orientation
 index_Tip_Right = 92  # no orientation
 index_Thumb_Right = 96  # no orientation
 
+sc1 = StandardScaler()
+sc2 = MinMaxScaler()
 
 class Data_Loader:
     def __init__(self, dir):
@@ -153,12 +155,15 @@ class Test_Data_Loader():
         self.num_timestep = 100
         self.new_label = []
         #self.x = self.import_dataset()
+
         self.x = data
+        # self.x = self.filter(self.x)
+
         self.batch_size = int(self.x.shape[0]/100)
         self.num_joints = len(self.body_part)
         #self.sc1 = StandardScaler()
         #self.sc2 = StandardScaler()
-        self.x = self.filter(self.x)
+        self.x = self.filter(data)
         self.scaled_x = self.preprocessing()
                 
     def filter(self, data):
@@ -179,8 +184,16 @@ class Test_Data_Loader():
             else:
                 raf_x = data[:,i]
                 b, a = signal.butter(3, (2/30), 'low')
-                y = signal.filtfilt(b, a, raf_x)
+                y = signal.filtfilt(b, a, raf_x, padlen=0) # Adjust padlen as needed
                 data[:,i] = y
+                # raf_x = data[:, i]
+                # if len(raf_x) > 12:  # Ensure length of input vector is greater than padlen
+                #     b, a = signal.butter(3, (2 / 30), 'low')
+                #     y = signal.filtfilt(b, a, raf_x, padlen=12)  # Adjust padlen as needed
+                #     data[:, i] = y
+                # else:
+                #     # Handle case where input vector length is too short
+                #     print(f"Input vector length too short for filtering: {len(raf_x)}")
         #return data[1:-1]
         return data
 
@@ -201,10 +214,12 @@ class Test_Data_Loader():
                 for i in range(self.num_channel):
                     X_train[row, counter+i] = self.x[row, parts+i]
                 counter += self.num_channel 
-        
-        X_train = sc1.transform(X_train)         
-                        
+
+        X_train = sc1.fit_transform(X_train)         
+
         X_train_ = np.zeros((self.batch_size, self.num_timestep, self.num_joints, self.num_channel))
+
+        # print("batch_size: ", self.batch_size)
         
         for batch in range(X_train_.shape[0]):
             for timestep in range(X_train_.shape[1]):
@@ -213,4 +228,7 @@ class Test_Data_Loader():
                         X_train_[batch,timestep,node,channel] = X_train[timestep+(batch*self.num_timestep),channel+(node*self.num_channel)]
                         
         X_train = X_train_
+
+        # print("X_train: ", X_train)
+
         return X_train
